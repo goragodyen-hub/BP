@@ -1,11 +1,11 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Prompt:wght@300;400;500;600&display=swap');
 
 :root {
-  --primary-color: #0d9488;
-  --primary-hover: #0f766e;
-  --secondary-color: #0284c7;
-  --background-start: #f0f9ff;
-  --background-end: #e0f2fe;
+  --primary-color: #ec4899;
+  --primary-hover: #db2777;
+  --secondary-color: #8b5cf6;
+  --background-start: #ff9a9e;
+  --background-end: #fecfef;
   --glass-bg: rgba(255, 255, 255, 0.7);
   --glass-border: rgba(255, 255, 255, 0.5);
   --text-main: #1e293b;
@@ -17,15 +17,15 @@
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --primary-color: #14b8a6;
-    --primary-hover: #0d9488;
-    --secondary-color: #38bdf8;
-    --background-start: #0f172a;
-    --background-end: #1e293b;
-    --glass-bg: rgba(30, 41, 59, 0.7);
-    --glass-border: rgba(255, 255, 255, 0.1);
+    --primary-color: #f472b6;
+    --primary-hover: #ec4899;
+    --secondary-color: #a78bfa;
+    --background-start: #4a192c;
+    --background-end: #4a2145;
+    --glass-bg: rgba(30, 41, 59, 0.75);
+    --glass-border: rgba(255, 255, 255, 0.2);
     --text-main: #f8fafc;
-    --text-muted: #94a3b8;
+    --text-muted: #cbd5e1;
   }
 }
 
@@ -37,14 +37,29 @@
 
 body {
   font-family: 'Prompt', 'Inter', sans-serif;
-  background: linear-gradient(135deg, var(--background-start), var(--background-end));
+  background: linear-gradient(-45deg, #ff9a9e, #fecfef, #a1c4fd, #c2e9fb);
+  background-size: 400% 400%;
+  animation: gradientBG 15s ease infinite;
   color: var(--text-main);
   min-height: 100vh;
   display: flex;
   justify-content: center;
   align-items: flex-start;
   padding: 1rem;
-  background-attachment: fixed;
+}
+
+@media (prefers-color-scheme: dark) {
+  body {
+    background: linear-gradient(-45deg, #4a192c, #4a2145, #1e2f5c, #163a4a);
+    background-size: 400% 400%;
+    animation: gradientBG 15s ease infinite;
+  }
+}
+
+@keyframes gradientBG {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
 }
 
 #root {
@@ -92,9 +107,15 @@ h1 {
   font-size: 1.75rem;
   text-align: center;
   margin-bottom: 0.5rem;
-  background: linear-gradient(to right, var(--primary-color), var(--secondary-color));
+  background: linear-gradient(to right, #ff3b3b, #ff9e3b, #ffea3b, #3bff5b, #3b88ff, #a63bff);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
+  background-size: 200% auto;
+  animation: shimmer 4s infinite linear;
+}
+
+@keyframes shimmer {
+  to { background-position: 200% center; }
 }
 
 p.subtitle {
