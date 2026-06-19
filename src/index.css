@@ -338,6 +338,45 @@ tr:hover {
   100% { transform: rotate(360deg); }
 }
 
+/* Mobile Responsive */
+@media (max-width: 600px) {
+  body {
+    padding: 0.5rem;
+  }
+  .glass-panel {
+    padding: 1rem;
+    border-radius: 12px;
+  }
+  .input-grid {
+    grid-template-columns: 1fr;
+    gap: 0.5rem;
+  }
+  .flex-row {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+  h1 {
+    font-size: 1.3rem;
+  }
+  p.subtitle {
+    font-size: 0.8rem;
+    margin-bottom: 1rem;
+  }
+  .tab {
+    padding: 0.4rem 0.2rem;
+    font-size: 0.85rem;
+  }
+  .btn {
+    padding: 0.6rem 1rem;
+    font-size: 0.95rem;
+  }
+  .measurement-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.2rem;
+  }
+}
+
 @media print {
   body {
     background: white;
