@@ -36,19 +36,35 @@ function App() {
     // Validation
     const sys1 = parseInt(formData.m1_sys);
     const dia1 = parseInt(formData.m1_dia);
+    const p1 = parseInt(formData.m1_pulse);
+    
+    const hasM2 = formData.m2_sys || formData.m2_dia || formData.m2_pulse;
     const sys2 = parseInt(formData.m2_sys);
     const dia2 = parseInt(formData.m2_dia);
-    const p1 = parseInt(formData.m1_pulse);
     const p2 = parseInt(formData.m2_pulse);
 
-    if (sys1 <= dia1 || sys2 <= dia2) {
-      setStatus({ type: 'error', message: 'ค่าตัวบน (SYS) ต้องมากกว่าตัวล่าง (DIA) เสมอ' });
+    if (sys1 <= dia1) {
+      setStatus({ type: 'error', message: 'ครั้งที่ 1: ค่าตัวบน (SYS) ต้องมากกว่าตัวล่าง (DIA)' });
       return;
     }
-    if (sys1 < 70 || sys1 > 250 || dia1 < 40 || dia1 > 150 || p1 < 30 || p1 > 200 ||
-        sys2 < 70 || sys2 > 250 || dia2 < 40 || dia2 > 150 || p2 < 30 || p2 > 200) {
-      setStatus({ type: 'error', message: 'ค่าที่กรอกอยู่นอกเหนือช่วงปกติ กรุณาตรวจสอบอีกครั้ง' });
+    if (sys1 < 70 || sys1 > 250 || dia1 < 40 || dia1 > 150 || p1 < 30 || p1 > 200) {
+      setStatus({ type: 'error', message: 'ครั้งที่ 1: ค่าที่กรอกอยู่นอกเหนือช่วงปกติ' });
       return;
+    }
+
+    if (hasM2) {
+      if (!formData.m2_sys || !formData.m2_dia || !formData.m2_pulse) {
+        setStatus({ type: 'error', message: 'ครั้งที่ 2: กรุณากรอกข้อมูลให้ครบทุกช่อง (หากไม่ต้องการ ให้เว้นว่างไว้ทั้งหมด)' });
+        return;
+      }
+      if (sys2 <= dia2) {
+        setStatus({ type: 'error', message: 'ครั้งที่ 2: ค่าตัวบน (SYS) ต้องมากกว่าตัวล่าง (DIA)' });
+        return;
+      }
+      if (sys2 < 70 || sys2 > 250 || dia2 < 40 || dia2 > 150 || p2 < 30 || p2 > 200) {
+        setStatus({ type: 'error', message: 'ครั้งที่ 2: ค่าที่กรอกอยู่นอกเหนือช่วงปกติ' });
+        return;
+      }
     }
 
     setLoading(true);
@@ -266,15 +282,15 @@ function App() {
               <div className="input-grid">
                 <div className="form-group">
                   <label>ตัวบน (SYS)</label>
-                  <input type="number" name="m2_sys" placeholder="mmHg" value={formData.m2_sys} onChange={handleChange} required />
+                  <input type="number" name="m2_sys" placeholder="mmHg" value={formData.m2_sys} onChange={handleChange} />
                 </div>
                 <div className="form-group">
                   <label>ตัวล่าง (DIA)</label>
-                  <input type="number" name="m2_dia" placeholder="mmHg" value={formData.m2_dia} onChange={handleChange} required />
+                  <input type="number" name="m2_dia" placeholder="mmHg" value={formData.m2_dia} onChange={handleChange} />
                 </div>
                 <div className="form-group">
                   <label>ชีพจร (Pulse)</label>
-                  <input type="number" name="m2_pulse" placeholder="bpm" value={formData.m2_pulse} onChange={handleChange} required />
+                  <input type="number" name="m2_pulse" placeholder="bpm" value={formData.m2_pulse} onChange={handleChange} />
                 </div>
               </div>
             </div>
