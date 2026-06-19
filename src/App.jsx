@@ -136,7 +136,7 @@ function App() {
   return (
     <div className="app-container">
       <div className="glass-panel">
-        <h1>บันทึกความดันที่บ้าน</h1>
+        <h1>บันทึกความดันของ กรกฎ</h1>
         <p className="subtitle">ดูแลสุขภาพของคุณในทุกๆ วัน</p>
 
         <div className="tabs">
