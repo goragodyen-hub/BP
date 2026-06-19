@@ -45,8 +45,9 @@ function doGet(e) {
     const rows = data.slice(1);
     
     // แปลงข้อมูลเป็น JSON (ดึงแค่ 20 รายการล่าสุด)
-    const result = rows.map(row => {
+    const result = rows.map((row, idx) => {
       let obj = {};
+      obj.rowNumber = idx + 2; // +1 สำหรับแถวหัวตาราง, +1 เพราะ Array เริ่มที่ 0
       headers.forEach((header, index) => {
         obj[header] = row[index];
       });
@@ -74,6 +75,14 @@ function doPost(e) {
     if (!sheet) {
        setupSheet();
        sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(SHEET_NAME);
+    }
+
+    if (payload.action === 'delete') {
+      if (!payload.rowNumber) {
+        return createJsonResponse({ status: 'error', message: 'Row number required for delete' });
+      }
+      sheet.deleteRow(payload.rowNumber);
+      return createJsonResponse({ status: 'success', message: 'Data deleted successfully' });
     }
 
     const timestamp = new Date();

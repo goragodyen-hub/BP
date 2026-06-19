@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { Activity, Clock, Calendar, CheckCircle, AlertCircle, Save, History, RefreshCw, Info, PieChart, Printer } from 'lucide-react';
+import { Activity, Clock, Calendar, CheckCircle, AlertCircle, Save, History, RefreshCw, Info, PieChart, Printer, Trash2, TrendingUp, TrendingDown } from 'lucide-react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 
 // === การตั้งค่า Google Apps Script URL ===
@@ -33,13 +33,31 @@ function App() {
       return;
     }
     
+    // Validation
+    const sys1 = parseInt(formData.m1_sys);
+    const dia1 = parseInt(formData.m1_dia);
+    const sys2 = parseInt(formData.m2_sys);
+    const dia2 = parseInt(formData.m2_dia);
+    const p1 = parseInt(formData.m1_pulse);
+    const p2 = parseInt(formData.m2_pulse);
+
+    if (sys1 <= dia1 || sys2 <= dia2) {
+      setStatus({ type: 'error', message: 'ค่าตัวบน (SYS) ต้องมากกว่าตัวล่าง (DIA) เสมอ' });
+      return;
+    }
+    if (sys1 < 70 || sys1 > 250 || dia1 < 40 || dia1 > 150 || p1 < 30 || p1 > 200 ||
+        sys2 < 70 || sys2 > 250 || dia2 < 40 || dia2 > 150 || p2 < 30 || p2 > 200) {
+      setStatus({ type: 'error', message: 'ค่าที่กรอกอยู่นอกเหนือช่วงปกติ กรุณาตรวจสอบอีกครั้ง' });
+      return;
+    }
+
     setLoading(true);
     setStatus(null);
 
     try {
       await fetch(SCRIPT_URL, {
         method: 'POST',
-        body: JSON.stringify(formData),
+        body: JSON.stringify({ ...formData, action: 'insert' }),
       });
       
       setStatus({ type: 'success', message: 'บันทึกข้อมูลเรียบร้อยแล้ว!' });
@@ -71,6 +89,25 @@ function App() {
       }
     } catch (error) {
       console.error("Fetch error", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleDelete = async (rowNumber) => {
+    if (!window.confirm('คุณต้องการลบข้อมูลนี้ใช่หรือไม่?')) return;
+    
+    setLoading(true);
+    setStatus(null);
+    try {
+      await fetch(SCRIPT_URL, {
+        method: 'POST',
+        body: JSON.stringify({ action: 'delete', rowNumber }),
+      });
+      setStatus({ type: 'success', message: 'ลบข้อมูลเรียบร้อยแล้ว' });
+      fetchHistory();
+    } catch (error) {
+      setStatus({ type: 'error', message: 'เกิดข้อผิดพลาดในการลบข้อมูล' });
     } finally {
       setLoading(false);
     }
@@ -126,10 +163,35 @@ function App() {
       };
     }).filter(d => d.SYS > 0);
 
+    let trendMessage = null;
+    let trendType = 'neutral';
+    
+    if (chartData.length >= 4) {
+      const mid = Math.floor(chartData.length / 2);
+      const recentCount = Math.min(7, mid);
+      const recent = chartData.slice(-recentCount);
+      const previous = chartData.slice(-recentCount * 2, -recentCount);
+      
+      if (recent.length > 0 && previous.length > 0) {
+        const avgRecent = recent.reduce((sum, d) => sum + d.SYS, 0) / recent.length;
+        const avgPrev = previous.reduce((sum, d) => sum + d.SYS, 0) / previous.length;
+        
+        if (avgRecent > avgPrev + 3) {
+          trendMessage = 'ช่วงนี้ความดันเฉลี่ยของคุณสูงขึ้น ควรพักผ่อนและดูแลตัวเองเป็นพิเศษ';
+          trendType = 'up';
+        } else if (avgRecent < avgPrev - 3) {
+          trendMessage = 'ความดันเฉลี่ยของคุณลดลง ถือเป็นแนวโน้มที่ดี!';
+          trendType = 'down';
+        }
+      }
+    }
+
     return {
       chartData,
       avgSys: count ? Math.round(totalSys / count) : 0,
-      avgDia: count ? Math.round(totalDia / count) : 0
+      avgDia: count ? Math.round(totalDia / count) : 0,
+      trendMessage,
+      trendType
     };
   }, [historyData]);
 
@@ -263,6 +325,7 @@ function App() {
                       <th>วันที่/เวลา</th>
                       <th>ครั้งที่ 1 (SYS/DIA)</th>
                       <th>ครั้งที่ 2 (SYS/DIA)</th>
+                      <th></th>
                     </tr>
                   </thead>
                   <tbody>
@@ -291,6 +354,13 @@ function App() {
                           <td>
                             <div style={{fontWeight: '600'}}>{s2}/{d2} <span style={{fontWeight:'normal', fontSize:'0.8em', color:'var(--text-muted)'}}>(♥{p2})</span></div>
                             {stat2 && <span className={`status-badge ${stat2.className}`} style={{marginTop:'0.2rem', display:'inline-block'}}>{stat2.label}</span>}
+                          </td>
+                          <td style={{textAlign: 'center', verticalAlign: 'middle'}}>
+                            {row.rowNumber && (
+                              <button className="btn btn-secondary" style={{padding: '0.4rem', width: 'auto', borderRadius: '8px'}} onClick={() => handleDelete(row.rowNumber)} title="ลบข้อมูล">
+                                <Trash2 size={16} color="var(--danger)" />
+                              </button>
+                            )}
                           </td>
                         </tr>
                       )
@@ -329,6 +399,16 @@ function App() {
                       <h3 style={{ fontSize: '2.5rem', color: 'var(--secondary-color)', margin: 0 }}>{reportData.avgDia}</h3>
                     </div>
                  </div>
+
+                 {/* แจ้งเตือนแนวโน้ม */}
+                 {reportData.trendMessage && (
+                   <div style={{ background: reportData.trendType === 'up' ? 'rgba(239, 68, 68, 0.1)' : 'rgba(16, 185, 129, 0.1)', border: `1px solid ${reportData.trendType === 'up' ? 'rgba(239, 68, 68, 0.2)' : 'rgba(16, 185, 129, 0.2)'}`, borderRadius: '12px', padding: '1rem', marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                     {reportData.trendType === 'up' ? <TrendingUp size={24} color="var(--danger)" style={{minWidth:'24px'}} /> : <TrendingDown size={24} color="var(--success)" style={{minWidth:'24px'}} />}
+                     <p style={{ color: reportData.trendType === 'up' ? 'var(--danger)' : 'var(--success)', fontSize: '0.95rem', margin: 0, fontWeight: 500 }}>
+                       {reportData.trendMessage}
+                     </p>
+                   </div>
+                 )}
 
                  {/* กราฟ */}
                  <div style={{ background: 'var(--glass-bg)', border: '1px solid var(--glass-border)', borderRadius: '12px', padding: '1.5rem 1rem' }}>
